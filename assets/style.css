@@ -497,7 +497,7 @@ footer .footer {
   }
 }
 
-@media (max-width:390px){
+@media (max-width:590px){
   section{
     width: 390px;
     height: auto;
@@ -506,7 +506,7 @@ footer .footer {
 
 
 
-@media (max-width:390px){
+@media (max-width:590px){
   .map {
     flex-direction: column
   }
@@ -515,7 +515,7 @@ footer .footer {
   }
 }
 
-@media (max-width:390px){
+@media (max-width:590px){
   .map> iframe{
     width: 350px;
   }
@@ -528,14 +528,14 @@ footer .footer {
   }
 }
 
-@media (max-width:390px){
+@media (max-width:590px){
   .map-info {
     text-align: center;
   }
 }
 
 
-@media (max-width:390px){
+@media (max-width:590px){
   .row-con {
     padding-left: 10%;
   }
