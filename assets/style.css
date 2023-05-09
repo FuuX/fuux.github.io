@@ -914,6 +914,176 @@ textarea.input1+.shadow-input1 {
 
 
 
+.timeline {
+  position: relative;
+  margin: 0 auto;
+  width: 90%;
+  
+}
+.timeline ul li {
+  margin-bottom: 50px;
+  list-style-type: none;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+.point {
+  min-width: 20px;
+  height: 20px;
+  background-color: #ffe600;
+  border-radius: 100%;
+  z-index: 2;
+  border: 3px #333333 solid;
+  position: relative;
+  left: 1px;
+}
+.timeline ul li .content {
+  width: 50%;
+  padding: 0 20px;
+}
+.timeline ul li:nth-child(odd) .content {
+  padding-left: 0;
+}
+.timeline ul li:nth-child(odd) .date {
+  padding-right: 0;
+}
+.timeline ul li:nth-child(even) .content {
+  padding-right: 0;
+}
+.timeline ul li:nth-child(even) .date {
+  padding-left: 0;
+}
+.timeline ul li .date {
+  width: 50%;
+  padding: 0 20px;
+  font-weight: normal;
+}
+.timeline ul li .date h4 {
+  background-color: #e9e3e3;
+  width: 100px;
+  text-align: center;
+  padding: 5px 10px;
+  border-radius: 10px;
+}
+.timeline ul li .content h3 {
+  padding: 10px 20px;
+  background-color: #ffe600;
+  margin-bottom: 0;
+  text-align: center;
+  border-top-left-radius: 10px;
+  border-top-right-radius: 10px;
+}
+.timeline ul li .content p {
+  padding: 10px 20px;
+  background-color: #e9e3e3;
+  margin-top: 0;
+  text-align: center;
+  border-bottom-left-radius: 10px;
+  border-bottom-right-radius: 10px;
+}
+.timeline ul li:nth-child(even) {
+  flex-direction: row-reverse;
+}
+.timeline ul li:nth-child(even) .date h4 {
+  float: right
+}
+.timeline::before {
+  content: "";
+  position: absolute;
+  height: 100%;
+  width: 3px;
+  left: 50%;
+  background-color: #333333;
+}
+
+
+.about-hr {
+  display: flex;
+  margin: auto;
+  width: 65%;
+}
+
+.firm {
+  padding: 50px;
+}
+
+.who {
+  text-align: center;
+  font-size: 24px;
+  width: 50%;
+  margin: auto;
+  padding: 50px;
+}
+
+@media (max-width: 800px) {
+  .point {
+      min-width: 15px;
+      height: 15px;
+  }
+  .timeline {
+      font-size: 15px;
+  }
+}
+@media (max-width: 650px) {
+  .timeline {
+      font-size: 14px;
+  }
+  
+  .point {
+      min-width: 12px;
+      height: 12px;
+  }
+}
+@media (max-width: 450px) {
+  .timeline {
+      font-size: 10px;
+  }
+  .timeline > p {
+      padding: 10px !important;
+  }
+}
+
+
+.gallery-item {
+  width: 200px;
+  padding: 5px;
+}
+
+
+.d-flex {
+  display: flex !important;
+}
+
+.d-md-flex {
+  display: flex !important;
+}
+
+.align-items-center {
+  align-items: center !important;
+}
+
+.justify-content-center {
+  justify-content: center !important;
+}
+
+
+
+
+.space {
+
+  padding: 100px;
+
+}
+
+
+
+
+
+
+
+
+
+
 
 /*
 @media (min-width: 1445px){
