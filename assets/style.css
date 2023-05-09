@@ -1015,6 +1015,11 @@ textarea.input1+.shadow-input1 {
   padding: 50px;
 }
 
+@media (min-width: 286px) {
+  .who{
+      width: auto;
+  }
+
 @media (max-width: 800px) {
   .point {
       min-width: 15px;
