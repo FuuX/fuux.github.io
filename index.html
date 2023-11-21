@@ -1,5 +1,43 @@
-<input type="number"> ZA ILE EURO
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
 
-<p id="prowizja"></p>
-<p id="tylepasuje"></p>
-<p id="binance"></p>
+<p style="font-size: 48px">ZA ILE EURO W TEORII<p></p>
+<input type="number" id="euro">
+<input type="submit" onclick="calc()" value="GRAĆ">
+
+
+<p id="prowizja" style="font-size: 24px;"></p>
+<p id="tylepasuje" style="font-size: 24px;"></p>
+<p id="binance" style="font-size: 24px;"></p>
+<p id="potwojemu"  style="font-size: 24px;"></p>
+
+
+<script>
+    function roundToNearestMultiple(number, multiple) {
+    return Math.ceil(number / multiple) * multiple;
+}
+
+    function calc(){
+    x = parseFloat(document.getElementById("euro").value);
+
+    g2a = x + (0.0398 * x);
+
+    pscfaktycznie = g2a + (0.0527 * g2a);
+
+    binance = x*3.86;
+
+    document.getElementById("prowizja").innerHTML = (pscfaktycznie - x).toFixed(2) + "EUR prowizji";
+    document.getElementById("tylepasuje").innerHTML = pscfaktycznie.toFixed(2) + "EUR tyle wychodzi na oko euro więc pasowaloby może zaokrąglić i kupić za " + roundToNearestMultiple(pscfaktycznie, 10) + " euro"
+    document.getElementById("binance").innerHTML = binance.toFixed(2) + "PLN a tyle dostaniesz chociaz może to być o 40zl wiecej albo 30zl mniej moze sie wahać";
+
+    };
+</script>
+
+</body>
+</html>
