@@ -7,15 +7,13 @@
 </head>
 <body>
 
-<p style="font-size: 48px">ZA ILE EURO W TEORII<p></p>
-<input type="number" id="euro">
+<p style="font-size: 48px">IMPAIRED PROBABILITY<p></p>
+<input type="number" id="kurs1">
+<input type="number" id="kurs2">
 <input type="submit" onclick="calc()" value="GRAĆ">
 
 
-<p id="prowizja" style="font-size: 24px;"></p>
-<p id="tylepasuje" style="font-size: 24px;"></p>
-<p id="binance" style="font-size: 24px;"></p>
-<p id="potwojemu"  style="font-size: 24px;"></p>
+<p id="prowizja" style="font-size: 24px;"></p>p>
 
 
 <script>
@@ -24,17 +22,12 @@
 }
 
     function calc(){
-    x = parseFloat(document.getElementById("euro").value);
+    x = parseFloat(document.getElementById("kurs1").value);
+    y = parseFloat(document.getElementById("kurs2").value)
 
-    g2a = x + (0.0398 * x);
 
-    pscfaktycznie = g2a + (0.0527 * g2a);
-
-    binance = x*3.86;
-
-    document.getElementById("prowizja").innerHTML = (pscfaktycznie - x).toFixed(2) + "EUR prowizji G2A+PSC";
-    document.getElementById("tylepasuje").innerHTML = pscfaktycznie.toFixed(2) + "EUR tyle wychodzi na oko euro więc pasowaloby może zaokrąglić i kupić PSC za " + roundToNearestMultiple(pscfaktycznie, 10) + " euro"
-    document.getElementById("binance").innerHTML = binance.toFixed(2) + "PLN a tyle dostaniesz chociaz może to być o 40zl wiecej albo 30zl mniej moze sie wahać";
+    document.getElementById("prowizja").innerHTML = (1/x + 1/y).toFixed(2) + " %";
+   
 
     };
 </script>
