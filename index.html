@@ -1,3 +1,371 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Odliczanie</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  min-height: 100vh;
+  background: #0a0a0f;
+  color: #f0eee8;
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 1rem;
+  overflow-x: hidden;
+}
+
+.stars { position: fixed; inset: 0; pointer-events: none; z-index: 0; }
+.star {
+  position: absolute; border-radius: 50%; background: #fff;
+  animation: twinkle var(--d) ease-in-out infinite alternate; opacity: 0;
+}
+@keyframes twinkle { from { opacity: 0.04; } to { opacity: 0.5; } }
+
+.main {
+  position: relative; z-index: 1;
+  width: 100%; max-width: 860px;
+  display: flex; flex-direction: column;
+  align-items: center; gap: 2.5rem;
+}
+
+h1 {
+  font-size: clamp(0.85rem, 2.5vw, 1.2rem);
+  font-weight: 400; color: #7a7088;
+  letter-spacing: 0.18em; text-transform: uppercase;
+}
+
+.countdown {
+  display: flex; gap: clamp(0.6rem, 3vw, 2rem);
+  align-items: flex-end; flex-wrap: wrap; justify-content: center;
+}
+.unit { display: flex; flex-direction: column; align-items: center; gap: 0.4rem; }
+.digit {
+  font-size: clamp(3rem, 11vw, 6.5rem);
+  font-weight: 700; line-height: 1;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.03em; color: #f5f3ee;
+}
+.label { font-size: 0.65rem; letter-spacing: 0.2em; text-transform: uppercase; color: #45405a; }
+.sep { font-size: clamp(2rem, 7vw, 4.5rem); font-weight: 300; color: #2e2a40; padding-bottom: 0.6rem; }
+
+/* ===== WHEEL SCENE ===== */
+.wheel-scene { display: flex; flex-direction: column; align-items: center; gap: 0.7rem; }
+
+.wheel-outer {
+  position: relative;
+  width: 210px; height: 210px;
+}
+
+.wheel-svg {
+  position: absolute; inset: 0;
+  animation: spin 2s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.wheel-hub {
+  position: absolute; width: 14px; height: 14px;
+  background: #2a2545; border-radius: 50%;
+  top: 50%; left: 50%; transform: translate(-50%,-50%); z-index: 5;
+  border: 2px solid #3a3460;
+}
+
+/* jamnik wewnątrz */
+.dog-wrap {
+  position: absolute;
+  bottom: 16px; left: 50%;
+  transform: translateX(-50%);
+  z-index: 3;
+  /* ciało lekko podskakuje w rytmie kroków */
+  animation: body-bob 0.42s ease-in-out infinite alternate;
+}
+@keyframes body-bob {
+  from { transform: translateX(-50%) translateY(0); }
+  to   { transform: translateX(-50%) translateY(-2px); }
+}
+
+/* SVG jamnika */
+.dog-svg { display: block; overflow: visible; }
+
+/* NOGI – animowane przez CSS transform na grupach SVG */
+/* transform-box:fill-box pozwala na transform-origin względem kształtu */
+.leg-front-r {
+  transform-box: fill-box;
+  transform-origin: top center;
+  animation: step-fr 0.42s ease-in-out infinite;
+}
+.leg-front-l {
+  transform-box: fill-box;
+  transform-origin: top center;
+  animation: step-fl 0.42s ease-in-out infinite;
+}
+.leg-back-r {
+  transform-box: fill-box;
+  transform-origin: top center;
+  animation: step-br 0.42s ease-in-out infinite;
+}
+.leg-back-l {
+  transform-box: fill-box;
+  transform-origin: top center;
+  animation: step-bl 0.42s ease-in-out infinite;
+}
+
+@keyframes step-fr {
+  0%   { transform: rotate(-25deg); }
+  50%  { transform: rotate(20deg); }
+  100% { transform: rotate(-25deg); }
+}
+@keyframes step-fl {
+  0%   { transform: rotate(20deg); }
+  50%  { transform: rotate(-25deg); }
+  100% { transform: rotate(20deg); }
+}
+@keyframes step-br {
+  0%   { transform: rotate(20deg); }
+  50%  { transform: rotate(-25deg); }
+  100% { transform: rotate(20deg); }
+}
+@keyframes step-bl {
+  0%   { transform: rotate(-25deg); }
+  50%  { transform: rotate(20deg); }
+  100% { transform: rotate(-25deg); }
+}
+
+/* ogon macha */
+.dog-tail {
+  transform-box: fill-box;
+  transform-origin: right center;
+  animation: tail-wag 0.5s ease-in-out infinite alternate;
+}
+@keyframes tail-wag {
+  from { transform: rotate(-20deg); }
+  to   { transform: rotate(15deg); }
+}
+
+/* ucho kiwa */
+.dog-ear {
+  transform-box: fill-box;
+  transform-origin: top center;
+  animation: ear-bob 0.85s ease-in-out infinite alternate;
+}
+@keyframes ear-bob {
+  from { transform: rotate(-4deg); }
+  to   { transform: rotate(4deg); }
+}
+
+.caption { font-size: 0.68rem; color: #38344a; letter-spacing: 0.12em; text-transform: uppercase; }
+
+/* ===== FAKTY ===== */
+.facts {
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 1px;
+  border: 1px solid #1a1828; border-radius: 14px;
+  overflow: hidden; background: #1a1828;
+}
+.fact { background: #0c0b15; padding: 1.2rem 1.4rem; display: flex; flex-direction: column; gap: 0.35rem; }
+.fact-icon { font-size: 1.3rem; line-height: 1; }
+.fact-val { font-size: 1.55rem; font-weight: 700; font-variant-numeric: tabular-nums; color: #b8a0e8; line-height: 1.1; }
+.fact-desc { font-size: 0.75rem; color: #48445a; line-height: 1.5; }
+
+.footer { font-size: 0.62rem; color: #28263a; letter-spacing: 0.12em; text-transform: uppercase; }
+</style>
+</head>
+<body>
+
+<div class="stars" id="stars"></div>
+
+<div class="main">
+  <h1>ŁOD TEGO</h1>
+
+  <div class="countdown">
+    <div class="unit"><div class="digit" id="cd-d">00</div><div class="label">dni</div></div>
+    <div class="sep">:</div>
+    <div class="unit"><div class="digit" id="cd-h">00</div><div class="label">godzin</div></div>
+    <div class="sep">:</div>
+    <div class="unit"><div class="digit" id="cd-m">00</div><div class="label">minut</div></div>
+    <div class="sep">:</div>
+    <div class="unit"><div class="digit" id="cd-s">00</div><div class="label">sekund</div></div>
+  </div>
+
+  <!-- KOŁOWROTEK Z JAMNIKIEM -->
+  <div class="wheel-scene">
+    <div class="wheel-outer">
+
+      <!-- obracające się kółko -->
+      <svg class="wheel-svg" viewBox="0 0 210 210" width="210" height="210" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="105" cy="105" r="100" fill="none" stroke="#1e1c32" stroke-width="5"/>
+        <!-- szprychy -->
+        <line x1="105" y1="5"   x2="105" y2="205" stroke="#1c1a2e" stroke-width="2.5"/>
+        <line x1="5"   y1="105" x2="205" y2="105" stroke="#1c1a2e" stroke-width="2.5"/>
+        <line x1="34"  y1="34"  x2="176" y2="176" stroke="#1c1a2e" stroke-width="2.5"/>
+        <line x1="176" y1="34"  x2="34"  y2="176" stroke="#1c1a2e" stroke-width="2.5"/>
+        <!-- wewnętrzny obwód -->
+        <circle cx="105" cy="105" r="72" fill="none" stroke="#18162a" stroke-width="1.5"/>
+        <!-- oś -->
+        <circle cx="105" cy="105" r="8" fill="#22203a" stroke="#2e2a4a" stroke-width="2"/>
+      </svg>
+
+      <!-- JAMNIK SVG -->
+      <div class="dog-wrap">
+        <!--
+          Jamnik patrzący w lewo (jak na obrazku), szerokość ~155px, wysokość ~75px
+          Kolory: ciemny brąz #7a3c14, jasny brąz #a05a28, akcent #c87840
+          Nogi przytwierdzony u góry (transform-origin: top center)
+        -->
+        <svg class="dog-svg" viewBox="0 0 160 78" width="155" height="75" xmlns="http://www.w3.org/2000/svg">
+
+          <!-- OGON (z lewej strony – pies patrzy w lewo) -->
+          <g class="dog-tail">
+            <path d="M142 28 Q158 16 153 6 Q150 0 156 3"
+              stroke="#5a2c0a" stroke-width="4.5" fill="none" stroke-linecap="round"/>
+          </g>
+
+          <!-- TYLNE NOGI – dalsza para (rysowana wcześniej = za ciałem) -->
+          <g class="leg-back-l">
+            <!-- udo -->
+            <ellipse cx="122" cy="56" rx="8" ry="14" fill="#6a3412" transform="rotate(0 122 56)"/>
+            <!-- podudzie -->
+            <rect x="117" y="62" width="9" height="16" rx="4" fill="#6a3412"/>
+            <!-- łapa -->
+            <ellipse cx="122" cy="78" rx="9" ry="4.5" fill="#7a3e18"/>
+          </g>
+
+          <!-- CIAŁO – główny kształt, długi i niski -->
+          <!-- dolna część (jaśniejsza – brzuch) -->
+          <ellipse cx="78" cy="48" rx="52" ry="14" fill="#a05a28"/>
+          <!-- górna część (ciemniejsza – grzbiet) -->
+          <ellipse cx="80" cy="36" rx="54" ry="20" fill="#8b4520"/>
+          <!-- gradient widoczność – dodatkowy ciemny pas grzbietu -->
+          <ellipse cx="80" cy="30" rx="46" ry="10" fill="#7a3c14"/>
+
+          <!-- TYLNE NOGI – bliższa para (na wierzchu ciała) -->
+          <g class="leg-back-r">
+            <ellipse cx="128" cy="54" rx="8" ry="13" fill="#7a3c14"/>
+            <rect x="123" y="60" width="10" height="17" rx="4.5" fill="#7a3c14"/>
+            <ellipse cx="128" cy="78" rx="9" ry="4.5" fill="#8a4820"/>
+          </g>
+
+          <!-- PRZEDNIE NOGI – dalsza para -->
+          <g class="leg-front-l">
+            <ellipse cx="38" cy="55" rx="7.5" ry="13" fill="#6a3412"/>
+            <rect x="33" y="61" width="9" height="17" rx="4" fill="#6a3412"/>
+            <ellipse cx="38" cy="79" rx="9" ry="4.5" fill="#7a3e18"/>
+          </g>
+
+          <!-- SZYJA -->
+          <ellipse cx="28" cy="38" rx="16" ry="14" fill="#8b4520"/>
+
+          <!-- GŁOWA -->
+          <ellipse cx="18" cy="26" rx="18" ry="15" fill="#7a3c14"/>
+
+          <!-- PYSK – wydłużony (lewa strona) -->
+          <ellipse cx="5" cy="30" rx="11" ry="8" fill="#7a3c14"/>
+          <!-- nos -->
+          <ellipse cx="-4" cy="28" rx="4.5" ry="3.5" fill="#1e0e04"/>
+          <!-- nozdrza hint -->
+          <path d="M-5 27 Q-3 25 -1 27" stroke="#3a1a08" stroke-width="0.8" fill="none"/>
+
+          <!-- PRZEDNIE NOGI – bliższa para (na wierzchu) -->
+          <g class="leg-front-r">
+            <ellipse cx="44" cy="53" rx="8" ry="13" fill="#7a3c14"/>
+            <rect x="39" y="59" width="10" height="17" rx="4.5" fill="#7a3c14"/>
+            <ellipse cx="44" cy="77" rx="9" ry="4.5" fill="#8a4820"/>
+          </g>
+
+          <!-- UCHO – zwisające, ciemne -->
+          <g class="dog-ear">
+            <ellipse cx="12" cy="35" rx="7" ry="13" fill="#4a2008" transform="rotate(-12 12 35)"/>
+          </g>
+
+          <!-- OKO -->
+          <circle cx="14" cy="21" r="4" fill="#1a0c04"/>
+          <circle cx="12.5" cy="20" r="1.5" fill="white" opacity="0.7"/>
+          <!-- blask oka -->
+          <circle cx="15" cy="22" r="0.8" fill="white" opacity="0.3"/>
+
+          <!-- BREW (ekspresja) -->
+          <path d="M10 16 Q14 13.5 18 15.5" stroke="#5a2c0a" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+
+          <!-- UŚMIECH -->
+          <path d="M1 32 Q4 36 8 33" stroke="#1a0c04" stroke-width="1.3" fill="none" stroke-linecap="round"/>
+
+          <!-- ŁATKA jaśniejsza na piersi -->
+          <ellipse cx="28" cy="46" rx="10" ry="6" fill="#c87840" opacity="0.45"/>
+
+        </svg>
+      </div>
+
+      <div class="wheel-hub"></div>
+    </div>
+    <div class="caption">czas leci nieubłaganie...</div>
+  </div>
+
+  <!-- CIEKAWOSTKI -->
+  <div class="facts" id="facts-grid"></div>
+
+  <div class="footer">1 czerwca 2026, godz. 00:00</div>
+</div>
+
+<script>
+// gwiazdy
+(function(){
+  const s=document.getElementById('stars');
+  for(let i=0;i<120;i++){
+    const el=document.createElement('div');
+    el.className='star';
+    const sz=Math.random()*2+0.5;
+    el.style.cssText=`width:${sz}px;height:${sz}px;left:${Math.random()*100}%;top:${Math.random()*100}%;--d:${(Math.random()*3+1.5).toFixed(1)}s;animation-delay:${(Math.random()*4).toFixed(1)}s;`;
+    s.appendChild(el);
+  }
+})();
+
+// odliczanie
+const target=new Date('2026-06-01T00:00:00');
+function pad(n){ return String(Math.floor(n)).padStart(2,'0'); }
+function fmt(n){ return n>=1000?Math.round(n).toLocaleString('pl-PL'):String(Math.round(n)); }
+
+function calcFacts(sec){
+  const h=sec/3600;
+  return [
+    { icon:'☕', val:fmt(h/17),    desc:'kaw (1 kawa na ~17h czuwania)' },
+    { icon:'🎬', val:fmt(h/2),     desc:'filmów (średnio 2h każdy)' },
+    { icon:'😴', val:fmt(h/8),     desc:'nocy snu (8h dziennie)' },
+    { icon:'🍕', val:fmt(h/8*3),   desc:'posiłków (3 dziennie)' },
+    { icon:'👣', val:fmt(h*800),   desc:'kroków (ok. 800/h aktywności)' },
+    { icon:'🎂', val:fmt(sec/604800*3), desc:'tortów (średnio 3 tygodniowo)' },
+  ];
+}
+
+function renderFacts(sec){
+  document.getElementById('facts-grid').innerHTML=
+    calcFacts(Math.max(0,sec)).map(f=>`
+      <div class="fact">
+        <div class="fact-icon">${f.icon}</div>
+        <div class="fact-val">${f.val}</div>
+        <div class="fact-desc">${f.desc}</div>
+      </div>`).join('');
+}
+
+function tick(){
+  const diff=(target-new Date())/1000;
+  if(diff<=0){
+    ['cd-d','cd-h','cd-m','cd-s'].forEach(id=>document.getElementById(id).textContent='00');
+    renderFacts(0);return;
+  }
+  document.getElementById('cd-d').textContent=pad(diff/86400);
+  document.getElementById('cd-h').textContent=pad((diff%86400)/3600);
+  document.getElementById('cd-m').textContent=pad((diff%3600)/60);
+  document.getElementById('cd-s').textContent=pad(diff%60);
+  renderFacts(diff);
+}
+tick();setInterval(tick,1000);
+</script>
+</body>
 </html>
